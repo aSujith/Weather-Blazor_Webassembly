@@ -1,0 +1,78 @@
+﻿@page "/fetchdata"
+
+<PageTitle>Weather forecast</PageTitle>
+
+@using Weather.Data
+@inject WeatherForecastService ForecastService
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+<div class="mb-3">
+    <input class="form-control" type="text" @bind="cityName" placeholder="Enter city name" />
+</div>
+<div>
+    <button class="btn btn-primary" @onclick="OnSub">Submit</button>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (forecasts?.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>City</th>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Name</td>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No forecasts available. Please enter a city.</p>
+}
+
+@code {
+
+    public List<WeatherForecast> forecasts = new();
+    public string cityName ="";
+    public bool isLoading = false;
+
+    public string defaultCity = "Erode";
+
+    public async Task OnSub()
+    {
+        isLoading = true;
+
+        if (!string.IsNullOrWhiteSpace(cityName))
+        {
+            forecasts = await ForecastService.GetForecastAsync(cityName);
+            cityName = string.Empty;
+        }
+        else
+        {
+            forecasts = await ForecastService.GetForecastAsync(defaultCity);
+        }
+
+        isLoading = false;
+    }
+}
